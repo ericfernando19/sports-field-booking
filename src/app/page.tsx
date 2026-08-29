@@ -1,69 +1,139 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Search, Calendar, CreditCard, Dumbbell, Volleyball, Trophy, Timer } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Navbar } from "@/components/layout/navbar";
+import { FieldCard } from "@/components/fields/field-card";
+import { getFeaturedFields } from "@/actions/field.actions";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+const sportCategories = [
+  { name: "Futsal", icon: Dumbbell, href: "/fields?sportType=FUTSAL" },
+  { name: "Bulu Tangkis", icon: Trophy, href: "/fields?sportType=BADMINTON" },
+  { name: "Basket", icon: Volleyball, href: "/fields?sportType=BASKETBALL" },
+  { name: "Tenis", icon: Timer, href: "/fields?sportType=TENNIS" },
+  { name: "Voli", icon: Volleyball, href: "/fields?sportType=VOLLEYBALL" },
+  { name: "Mini Soccer", icon: Dumbbell, href: "/fields?sportType=MINI_SOCCER" },
+];
+
+const steps = [
+  {
+    icon: Search,
+    title: "Pilih Lapangan",
+    description: "Temukan lapangan olahraga favorit Anda dari berbagai pilihan yang tersedia.",
+  },
+  {
+    icon: Calendar,
+    title: "Pilih Jadwal",
+    description: "Pilih tanggal dan jam yang sesuai dengan jadwal Anda.",
+  },
+  {
+    icon: CreditCard,
+    title: "Lakukan Pembayaran",
+    description: "Bayar dengan mudah melalui berbagai metode pembayaran yang tersedia.",
+  },
+];
+
+export default async function HomePage() {
+  const featuredFields = await getFeaturedFields();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen">
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className="relative py-20 md:py-32 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1920&q=80')" }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="relative z-10 container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white">
+            Booking Lapangan Olahraga
+            <span className="text-white block mt-2">Jadi Lebih Mudah</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-6 text-lg md:text-xl text-white max-w-2xl mx-auto">
+            Cari lapangan, pilih jadwal, dan lakukan booking dalam beberapa langkah.
           </p>
+          <div className="mt-8 flex gap-4 justify-center">
+            <Button render={<Link href="/fields" />} size="lg" variant="outline" nativeButton={false} className="border-white text-black hover:bg-white hover:text-black">
+              <Search className="mr-2 h-5 w-5" />
+              Cari Lapangan
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Sport Categories */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Kategori Olahraga</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {sportCategories.map((category) => (
+              <Link key={category.name} href={category.href}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                    <category.icon className="h-10 w-10 text-primary mb-3" />
+                    <span className="font-medium">{category.name}</span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Featured Fields */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold">Lapangan Terbaru</h2>
+            <Button render={<Link href="/fields" />} variant="outline" nativeButton={false}>
+              Lihat Semua
+            </Button>
+          </div>
+          {featuredFields.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredFields.map((field) => (
+                <FieldCard key={field.id} field={field} />
+              ))}
+            </div>
+          ) : (
+            <Card className="py-12">
+              <CardContent className="text-center text-muted-foreground">
+                Belum ada lapangan tersedia.
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Cara Kerja</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((step, index) => (
+              <div key={step.title} className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground font-bold text-2xl mb-4">
+                  {index + 1}
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                <p className="text-muted-foreground">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 border-t">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} SportBook. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

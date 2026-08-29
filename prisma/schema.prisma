@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SportType {
+  FUTSAL
+  BADMINTON
+  BASKETBALL
+  TENNIS
+  VOLLEYBALL
+  MINI_SOCCER
+}
+
+enum ScheduleStatus {
+  AVAILABLE
+  BLOCKED
+  BOOKED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MOCK
+  BANK_TRANSFER
+  QRIS
+  EWALLET
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  password  String
+  image     String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Field {
+  id            String     @id @default(cuid())
+  name          String
+  slug          String     @unique
+  sportType     SportType
+  description   String?
+  location      String
+  pricePerHour  Int
+  facilities    String?
+  image         String?
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  schedules Schedule[]
+  bookings  Booking[]
+
+  @@index([sportType])
+  @@index([isActive])
+  @@index([slug])
+}
+
+model Schedule {
+  id        String         @id @default(cuid())
+  fieldId   String
+  date      DateTime       @db.Date
+  startTime String
+  endTime   String
+  price     Int
+  status    ScheduleStatus @default(AVAILABLE)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  field        Field          @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  bookingItems BookingItem[]
+
+  @@index([fieldId])
+  @@index([date])
+  @@index([status])
+  @@unique([fieldId, date, startTime])
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  bookingCode  String        @unique
+  userId       String
+  fieldId      String
+  bookingDate  DateTime      @db.Date
+  startTime    String
+  endTime      String
+  duration     Int
+  subtotal     Int
+  totalPrice   Int
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field        Field         @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  items        BookingItem[]
+  payment      Payment?
+
+  @@index([userId])
+  @@index([fieldId])
+  @@index([bookingDate])
+  @@index([status])
+  @@index([bookingCode])
+}
+
+model BookingItem {
+  id         String   @id @default(cuid())
+  bookingId  String
+  scheduleId String
+  startTime  String
+  endTime    String
+  price      Int
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, scheduleId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String        @unique
+  transactionId String?
+  amount        Int
+  method        PaymentMethod @default(MOCK)
+  status        PaymentStatus @default(PENDING)
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([status])
+}
