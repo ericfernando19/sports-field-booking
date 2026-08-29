@@ -14,7 +14,7 @@ import {
   Menu,
   ChevronLeft,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -125,10 +125,15 @@ export default function AdminLayout({
       {/* Mobile Sidebar */}
       <Sheet open={open} onOpenChange={setOpen}>
         <div className="lg:hidden fixed top-4 left-4 z-50">
-          <SheetTrigger>
-            <Button variant="outline" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
+          <SheetTrigger
+            nativeButton={false}
+            render={
+              <div
+                className="inline-flex size-8 items-center justify-center rounded-lg border border-transparent bg-background px-2.5 font-medium text-sm hover:bg-muted hover:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50 cursor-pointer outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
+            }
+          >
+            <Menu className="h-5 w-5" />
           </SheetTrigger>
         </div>
         <SheetContent side="left" className="w-64 p-0">
