@@ -62,7 +62,7 @@ export async function login(
   email: string,
   password: string,
   redirectTo?: string
-): Promise<ApiResponse> {
+): Promise<ApiResponse<{ role: string }>> {
   try {
     const result = await signIn("credentials", {
       email,
@@ -78,9 +78,15 @@ export async function login(
       };
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { role: true },
+    });
+
     return {
       success: true,
       message: "Login berhasil",
+      data: { role: user?.role ?? "USER" },
     };
   } catch (error) {
     console.error("Login error:", error);

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,8 +36,11 @@ interface FieldFormProps {
 
 export function FieldForm({ field }: FieldFormProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(field?.image || null);
   const isEditing = !!field;
 
   const {
@@ -103,6 +106,59 @@ export function FieldForm({ field }: FieldFormProps) {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Ukuran file maksimal 5MB");
+      return;
+    }
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Tipe file tidak didukung. Gunakan JPG, PNG, atau WebP");
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+
+    try {
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "field");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Gagal mengupload file");
+      }
+
+      const data = await res.json();
+      setValue("image", data.url);
+    } catch (err: any) {
+      setError(err.message || "Gagal mengupload gambar");
+      setImagePreview(null);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }
+
+  function handleRemoveImage() {
+    setValue("image", "");
+    setImagePreview(null);
   }
 
   return (
@@ -237,12 +293,55 @@ export function FieldForm({ field }: FieldFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">URL Gambar</Label>
-            <Input
-              id="image"
-              placeholder="https://example.com/image.jpg"
-              {...register("image")}
-              disabled={isLoading}
+            <Label htmlFor="image">Gambar Lapangan</Label>
+            {imagePreview ? (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8"
+                  onClick={handleRemoveImage}
+                  disabled={isLoading || isUploading}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div
+                className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isUploading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Mengupload...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Klik untuk upload gambar
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      JPG, PNG, atau WebP (maks. 5MB)
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleImageUpload}
+              disabled={isLoading || isUploading}
             />
           </div>
         </CardContent>

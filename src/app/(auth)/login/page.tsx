@@ -39,7 +39,8 @@ export default function LoginPage() {
         return;
       }
 
-      window.location.href = "/fields";
+      const role = result.data?.role;
+      window.location.href = role === "ADMIN" ? "/admin" : "/fields";
     } catch {
       setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
