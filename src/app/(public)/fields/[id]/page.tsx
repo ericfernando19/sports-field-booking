@@ -20,6 +20,15 @@ const sportTypeLabels: Record<string, string> = {
   MINI_SOCCER: "Mini Soccer",
 };
 
+const sportTypeImages: Record<string, string> = {
+  FUTSAL: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80",
+  BADMINTON: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80",
+  BASKETBALL: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80",
+  TENNIS: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&q=80",
+  VOLLEYBALL: "https://images.unsplash.com/photo-1592656094267-764a45160876?w=800&q=80",
+  MINI_SOCCER: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80",
+};
+
 interface FieldDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -36,6 +45,8 @@ export default async function FieldDetailPage({ params }: FieldDetailPageProps) 
     ? field.facilities.split(",").map((f) => f.trim())
     : [];
 
+  const imageUrl = field.image || sportTypeImages[field.sportType] || null;
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -45,9 +56,9 @@ export default async function FieldDetailPage({ params }: FieldDetailPageProps) 
           <div className="lg:col-span-2 space-y-6">
             {/* Image */}
             <div className="aspect-video bg-muted rounded-lg overflow-hidden">
-              {field.image ? (
+              {imageUrl ? (
                 <img
-                  src={field.image}
+                  src={imageUrl}
                   alt={field.name}
                   className="w-full h-full object-cover"
                 />

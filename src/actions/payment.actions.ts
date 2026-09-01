@@ -1,25 +1,21 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { paymentProvider } from "@/lib/payment/mock-provider";
-import { requireAuth } from "@/lib/permissions";
-import { paymentSchema, simulatePaymentSchema } from "@/validations/payment.schema";
+import { requireAuth, requireAdmin } from "@/lib/permissions";
 import { type ApiResponse } from "@/types";
 
-export async function createPayment(data: {
+export async function submitPaymentProof(data: {
   bookingId: string;
-  method?: string;
-}): Promise<ApiResponse<{ transactionId: string }>> {
+  proofImage: string;
+  bankName?: string;
+  accountName?: string;
+  notes?: string;
+}): Promise<ApiResponse> {
   try {
     const user = await requireAuth();
 
-    const validated = paymentSchema.safeParse(data);
-    if (!validated.success) {
-      return { success: false, message: "Data tidak valid" };
-    }
-
     const booking = await prisma.booking.findUnique({
-      where: { id: validated.data.bookingId },
+      where: { id: data.bookingId },
       include: { payment: true },
     });
 
@@ -31,41 +27,30 @@ export async function createPayment(data: {
       return { success: false, message: "Unauthorized" };
     }
 
-    if (booking.payment && booking.payment.status !== "PENDING") {
+    if (!booking.payment) {
+      return { success: false, message: "Pembayaran belum dibuat" };
+    }
+
+    if (booking.payment.status !== "PENDING") {
       return { success: false, message: "Pembayaran sudah diproses" };
     }
 
-    const result = await paymentProvider.createPayment({
-      bookingId: booking.id,
-      amount: Number(booking.totalPrice),
-      method: validated.data.method,
-    });
-
-    if (!result.success) {
-      return { success: false, message: result.message };
-    }
-
-    await prisma.payment.upsert({
-      where: { bookingId: booking.id },
-      update: {
-        transactionId: result.transactionId,
-        method: validated.data.method as any,
-        amount: Number(booking.totalPrice),
-        status: "PENDING",
-      },
-      create: {
-        bookingId: booking.id,
-        transactionId: result.transactionId,
-        method: validated.data.method as any,
-        amount: Number(booking.totalPrice),
-        status: "PENDING",
+    await prisma.payment.update({
+      where: { bookingId: data.bookingId },
+      data: {
+        status: "WAITING_CONFIRMATION",
+        proofImage: data.proofImage,
+        bankName: data.bankName,
+        accountName: data.accountName,
+        notes: data.notes || null,
+        method: "BANK_TRANSFER",
+        transactionId: `TRF-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
       },
     });
 
     return {
       success: true,
-      message: "Pembayaran berhasil dibuat",
-      data: { transactionId: result.transactionId },
+      message: "Bukti transfer berhasil dikirim. Menunggu verifikasi admin.",
     };
   } catch (error) {
     return {
@@ -75,44 +60,117 @@ export async function createPayment(data: {
   }
 }
 
-export async function simulatePaymentSuccess(
-  bookingId: string
+export async function verifyPayment(
+  bookingId: string,
+  action: "approve" | "reject"
 ): Promise<ApiResponse> {
   try {
+    const admin = await requireAdmin();
+
     const payment = await prisma.payment.findUnique({
       where: { bookingId },
     });
 
     if (!payment) {
-      return { success: false, message: "Transaksi tidak ditemukan" };
+      return { success: false, message: "Pembayaran tidak ditemukan" };
     }
 
-    if (payment.status !== "PENDING") {
-      return { success: false, message: "Transaksi sudah diproses" };
+    if (payment.status !== "WAITING_CONFIRMATION") {
+      return { success: false, message: "Pembayaran tidak dalam status menunggu verifikasi" };
     }
 
-    if (!payment.transactionId) {
-      return { success: false, message: "Transaction ID tidak ditemukan" };
+    if (action === "approve") {
+      await prisma.payment.update({
+        where: { bookingId },
+        data: {
+          status: "PAID",
+          paidAt: new Date(),
+          verifiedAt: new Date(),
+          verifiedBy: admin.id,
+        },
+      });
+
+      await prisma.booking.update({
+        where: { id: bookingId },
+        data: { status: "CONFIRMED" },
+      });
+
+      return {
+        success: true,
+        message: "Pembayaran berhasil diverifikasi",
+      };
+    } else {
+      await prisma.payment.update({
+        where: { bookingId },
+        data: {
+          status: "FAILED",
+          verifiedAt: new Date(),
+          verifiedBy: admin.id,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Pembayaran ditolak",
+      };
     }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Terjadi kesalahan",
+    };
+  }
+}
 
-    const status = await paymentProvider.simulatePayment(payment.transactionId);
+export async function getPendingPayments(): Promise<
+  ApiResponse<
+    Array<{
+      id: string;
+      bookingId: string;
+      amount: number;
+      status: string;
+      proofImage: string | null;
+      bankName: string | null;
+      accountName: string | null;
+      notes: string | null;
+      createdAt: Date;
+      booking: {
+        bookingCode: string;
+        bookingDate: Date;
+        startTime: string;
+        endTime: string;
+        user: { name: string; email: string };
+        field: { name: string };
+      };
+    }>
+  >
+> {
+  try {
+    await requireAdmin();
 
-    await prisma.payment.update({
-      where: { bookingId },
-      data: {
-        status: "PAID",
-        paidAt: status.paidAt,
+    const payments = await prisma.payment.findMany({
+      where: {
+        status: { in: ["PENDING", "WAITING_CONFIRMATION"] },
       },
-    });
-
-    await prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: "CONFIRMED" },
+      orderBy: { createdAt: "asc" },
+      include: {
+        booking: {
+          select: {
+            bookingCode: true,
+            bookingDate: true,
+            startTime: true,
+            endTime: true,
+            user: { select: { name: true, email: true } },
+            field: { select: { name: true } },
+          },
+        },
+      },
     });
 
     return {
       success: true,
-      message: "Pembayaran berhasil",
+      message: "Data pembayaran",
+      data: payments,
     };
   } catch (error) {
     return {
@@ -124,49 +182,21 @@ export async function simulatePaymentSuccess(
 
 export async function getPaymentStatus(
   bookingId: string
-): Promise<ApiResponse<{ status: string; paidAt?: Date }>> {
+): Promise<ApiResponse<{ status: string }>> {
   try {
     const payment = await prisma.payment.findUnique({
       where: { bookingId },
-      select: { status: true, paidAt: true, transactionId: true },
+      select: { status: true },
     });
 
     if (!payment) {
       return { success: false, message: "Pembayaran tidak ditemukan" };
     }
 
-    if (!payment.transactionId) {
-      return { success: false, message: "Transaction ID tidak ditemukan" };
-    }
-
-    const providerStatus = await paymentProvider.getPaymentStatus(
-      payment.transactionId
-    );
-
-    if (providerStatus.status !== payment.status) {
-      await prisma.payment.update({
-        where: { bookingId },
-        data: {
-          status: providerStatus.status as any,
-          paidAt: providerStatus.paidAt,
-        },
-      });
-
-      if (providerStatus.status === "PAID") {
-        await prisma.booking.update({
-          where: { id: bookingId },
-          data: { status: "CONFIRMED" },
-        });
-      }
-    }
-
     return {
       success: true,
       message: "Status pembayaran",
-      data: {
-        status: providerStatus.status,
-        paidAt: providerStatus.paidAt,
-      },
+      data: { status: payment.status },
     };
   } catch (error) {
     return {

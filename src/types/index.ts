@@ -19,6 +19,7 @@ export type BookingStatus =
 
 export type PaymentStatus =
   | "PENDING"
+  | "WAITING_CONFIRMATION"
   | "PAID"
   | "FAILED"
   | "EXPIRED"
@@ -94,6 +95,9 @@ export interface BookingWithDetails {
   payment?: {
     status: PaymentStatus;
     method: PaymentMethod;
+    proofImage?: string | null;
+    bankName?: string | null;
+    accountName?: string | null;
   } | null;
 }
 

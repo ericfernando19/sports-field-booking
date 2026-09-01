@@ -5,10 +5,10 @@ import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getMyBookings } from "@/actions/booking.actions";
 import { formatCurrency } from "@/lib/utils";
 import { BookingActions } from "@/components/booking/booking-actions";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +30,7 @@ const statusColors: Record<string, string> = {
 
 const paymentStatusLabels: Record<string, string> = {
   PENDING: "Menunggu",
+  WAITING_CONFIRMATION: "Verifikasi",
   PAID: "Lunas",
   FAILED: "Gagal",
   EXPIRED: "Kadaluarsa",
@@ -132,28 +133,31 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Booking Saya</h1>
 
-        <Tabs defaultValue={tab}>
-          <TabsList>
-            <TabsTrigger value="ALL" render={<Link href="/bookings?tab=ALL" />}>
-              Semua
-            </TabsTrigger>
-            <TabsTrigger value="CONFIRMED" render={<Link href="/bookings?tab=CONFIRMED" />}>
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger value="COMPLETED" render={<Link href="/bookings?tab=COMPLETED" />}>
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="CANCELLED" render={<Link href="/bookings?tab=CANCELLED" />}>
-              Cancelled
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            { value: "ALL", label: "Semua" },
+            { value: "CONFIRMED", label: "Upcoming" },
+            { value: "COMPLETED", label: "Completed" },
+            { value: "CANCELLED", label: "Cancelled" },
+          ].map((item) => (
+            <Link
+              key={item.value}
+              href={`/bookings?tab=${item.value}`}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                tab === item.value
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
 
-          <TabsContent value={tab} className="mt-6">
-            <Suspense fallback={<div>Memuat...</div>}>
-              <BookingsList tab={tab} page={page} />
-            </Suspense>
-          </TabsContent>
-        </Tabs>
+        <Suspense fallback={<div>Memuat...</div>}>
+          <BookingsList tab={tab} page={page} />
+        </Suspense>
       </div>
     </div>
   );

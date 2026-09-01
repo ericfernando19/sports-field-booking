@@ -37,6 +37,7 @@ enum BookingStatus {
 
 enum PaymentStatus {
   PENDING
+  WAITING_CONFIRMATION
   PAID
   FAILED
   EXPIRED
@@ -156,9 +157,15 @@ model Payment {
   bookingId     String        @unique
   transactionId String?
   amount        Int
-  method        PaymentMethod @default(MOCK)
+  method        PaymentMethod @default(BANK_TRANSFER)
   status        PaymentStatus @default(PENDING)
+  proofImage    String?
+  bankName      String?
+  accountName   String?
+  notes         String?
   paidAt        DateTime?
+  verifiedAt    DateTime?
+  verifiedBy    String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

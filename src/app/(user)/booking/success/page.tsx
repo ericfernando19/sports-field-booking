@@ -121,16 +121,19 @@ export default function BookingSuccessPage() {
                     Status Pembayaran
                   </span>
                   <span className="font-medium text-amber-600">
-                    {booking.payment?.status || "PENDING"}
+                    {booking.payment?.status === "WAITING_CONFIRMATION"
+                      ? "Menunggu Verifikasi"
+                      : booking.payment?.status || "PENDING"}
                   </span>
                 </div>
               </div>
 
-              {booking.payment?.status === "PENDING" && (
+              {(booking.payment?.status === "PENDING" || booking.payment?.status === "WAITING_CONFIRMATION") && (
                 <div className="mb-6">
                   <PaymentButton
                     bookingId={booking.id}
                     amount={booking.totalPrice}
+                    paymentStatus={booking.payment?.status}
                   />
                 </div>
               )}

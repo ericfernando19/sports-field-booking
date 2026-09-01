@@ -29,6 +29,7 @@ const statusColors: Record<string, string> = {
 
 const paymentStatusLabels: Record<string, string> = {
   PENDING: "Menunggu Pembayaran",
+  WAITING_CONFIRMATION: "Menunggu Verifikasi",
   PAID: "Lunas",
   FAILED: "Gagal",
   EXPIRED: "Kadaluarsa",
@@ -37,6 +38,7 @@ const paymentStatusLabels: Record<string, string> = {
 
 const paymentStatusColors: Record<string, string> = {
   PENDING: "text-yellow-600",
+  WAITING_CONFIRMATION: "text-amber-600",
   PAID: "text-green-600",
   FAILED: "text-red-600",
   EXPIRED: "text-gray-600",
@@ -184,10 +186,11 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
               </CardContent>
             </Card>
 
-            {booking.payment?.status === "PENDING" && (
+            {(booking.payment?.status === "PENDING" || booking.payment?.status === "WAITING_CONFIRMATION") && (
               <PaymentButton
                 bookingId={booking.id}
                 amount={booking.totalPrice}
+                paymentStatus={booking.payment?.status}
               />
             )}
 

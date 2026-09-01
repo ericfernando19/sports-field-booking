@@ -114,7 +114,7 @@ export async function getAllBookingsAdmin(params: {
           select: { name: true, email: true },
         },
         payment: {
-          select: { status: true, method: true },
+          select: { status: true, method: true, proofImage: true },
         },
       },
     }),

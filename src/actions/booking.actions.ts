@@ -109,7 +109,7 @@ export async function createBooking(
         data: {
           bookingId: booking.id,
           amount: totalPrice,
-          method: "MOCK",
+          method: "BANK_TRANSFER",
           status: "PENDING" as const,
         },
       });
@@ -252,7 +252,7 @@ export async function getBookingById(
         },
       },
       payment: {
-        select: { status: true, method: true, transactionId: true },
+        select: { status: true, method: true, transactionId: true, proofImage: true, bankName: true, accountName: true },
       },
       user: {
         select: { name: true, email: true },
@@ -367,7 +367,7 @@ export async function getBookingByCode(
         },
       },
       payment: {
-        select: { status: true, method: true, transactionId: true },
+        select: { status: true, method: true, transactionId: true, proofImage: true, bankName: true, accountName: true },
       },
     },
   });

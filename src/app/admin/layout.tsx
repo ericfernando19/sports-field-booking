@@ -10,6 +10,7 @@ import {
   Calendar,
   CalendarDays,
   Users,
+  CreditCard,
   LogOut,
   Menu,
   ChevronLeft,
@@ -39,6 +40,11 @@ const sidebarLinks = [
     label: "Booking",
     href: "/admin/bookings",
     icon: CalendarDays,
+  },
+  {
+    label: "Verifikasi Pembayaran",
+    href: "/admin/payments",
+    icon: CreditCard,
   },
   {
     label: "Users",

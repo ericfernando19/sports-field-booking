@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllBookingsAdmin } from "@/actions/admin.actions";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, cn } from "@/lib/utils";
 import { type PaginatedResponse } from "@/types";
 
 const statusLabels: Record<string, string> = {
@@ -31,6 +30,7 @@ const statusColors: Record<string, string> = {
 
 const paymentStatusLabels: Record<string, string> = {
   PENDING: "Menunggu",
+  WAITING_CONFIRMATION: "Verifikasi",
   PAID: "Lunas",
   FAILED: "Gagal",
   EXPIRED: "Kadaluarsa",
@@ -91,127 +91,120 @@ function BookingsContent() {
         <Button type="submit">Cari</Button>
       </form>
 
-      <Tabs value={tab}>
-        <TabsList>
-          <TabsTrigger
-            value="ALL"
-            render={<Link href="/admin/bookings?tab=ALL" />}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { value: "ALL", label: "Semua" },
+          { value: "CONFIRMED", label: "Dikonfirmasi" },
+          { value: "PENDING", label: "Menunggu" },
+          { value: "CANCELLED", label: "Dibatalkan" },
+        ].map((item) => (
+          <Link
+            key={item.value}
+            href={`/admin/bookings?tab=${item.value}`}
+            className={cn(
+              "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+              tab === item.value
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
           >
-            Semua
-          </TabsTrigger>
-          <TabsTrigger
-            value="CONFIRMED"
-            render={<Link href="/admin/bookings?tab=CONFIRMED" />}
-          >
-            Dikonfirmasi
-          </TabsTrigger>
-          <TabsTrigger
-            value="PENDING"
-            render={<Link href="/admin/bookings?tab=PENDING" />}
-          >
-            Menunggu
-          </TabsTrigger>
-          <TabsTrigger
-            value="CANCELLED"
-            render={<Link href="/admin/bookings?tab=CANCELLED" />}
-          >
-            Dibatalkan
-          </TabsTrigger>
-        </TabsList>
+            {item.label}
+          </Link>
+        ))}
+      </div>
 
-        <TabsContent value={tab} className="mt-6">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : data && data.items.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">Tidak ada booking ditemukan.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="rounded-lg border">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="text-left p-3 font-medium">Kode</th>
-                        <th className="text-left p-3 font-medium">User</th>
-                        <th className="text-left p-3 font-medium">Lapangan</th>
-                        <th className="text-left p-3 font-medium">Tanggal</th>
-                        <th className="text-left p-3 font-medium">Status</th>
-                        <th className="text-left p-3 font-medium">Pembayaran</th>
-                        <th className="text-right p-3 font-medium">Total</th>
-                        <th className="text-right p-3 font-medium">Aksi</th>
+      <div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : data && data.items.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">Tidak ada booking ditemukan.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="rounded-lg border">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left p-3 font-medium">Kode</th>
+                      <th className="text-left p-3 font-medium">User</th>
+                      <th className="text-left p-3 font-medium">Lapangan</th>
+                      <th className="text-left p-3 font-medium">Tanggal</th>
+                      <th className="text-left p-3 font-medium">Status</th>
+                      <th className="text-left p-3 font-medium">Pembayaran</th>
+                      <th className="text-right p-3 font-medium">Total</th>
+                      <th className="text-right p-3 font-medium">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data!.items.map((booking: any) => (
+                      <tr key={booking.id} className="border-b last:border-0">
+                        <td className="p-3 font-mono font-bold">
+                          {booking.bookingCode}
+                        </td>
+                        <td className="p-3">
+                          <div>{booking.user.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {booking.user.email}
+                          </div>
+                        </td>
+                        <td className="p-3">{booking.field.name}</td>
+                        <td className="p-3">
+                          {new Date(booking.bookingDate).toLocaleDateString("id-ID", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td className="p-3">
+                          <Badge className={statusColors[booking.status]}>
+                            {statusLabels[booking.status]}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <span className="text-sm">
+                            {paymentStatusLabels[booking.payment?.status || "PENDING"]}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right font-bold">
+                          {formatCurrency(booking.totalPrice)}
+                        </td>
+                        <td className="p-3 text-right">
+                          <Button variant="ghost" size="icon" render={<Link href={`/bookings/${booking.id}`} />} nativeButton={false}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {data!.items.map((booking: any) => (
-                        <tr key={booking.id} className="border-b last:border-0">
-                          <td className="p-3 font-mono font-bold">
-                            {booking.bookingCode}
-                          </td>
-                          <td className="p-3">
-                            <div>{booking.user.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {booking.user.email}
-                            </div>
-                          </td>
-                          <td className="p-3">{booking.field.name}</td>
-                          <td className="p-3">
-                            {new Date(booking.bookingDate).toLocaleDateString("id-ID", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </td>
-                          <td className="p-3">
-                            <Badge className={statusColors[booking.status]}>
-                              {statusLabels[booking.status]}
-                            </Badge>
-                          </td>
-                          <td className="p-3">
-                            <span className="text-sm">
-                              {paymentStatusLabels[booking.payment?.status || "PENDING"]}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right font-bold">
-                            {formatCurrency(booking.totalPrice)}
-                          </td>
-                          <td className="p-3 text-right">
-                            <Button variant="ghost" size="icon" render={<Link href={`/bookings/${booking.id}`} />} nativeButton={false}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-              {data!.totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-4">
-                  {Array.from({ length: data!.totalPages }, (_, i) => i + 1).map(
-                    (p) => (
-                      <Button
-                        key={p}
-                        variant={p === data!.totalPages ? "default" : "outline"}
-                        size="sm"
-                        render={<Link href={`/admin/bookings?tab=${tab}&page=${p}`} />}
-                      >
-                        {p}
-                      </Button>
-                    )
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
+            {data!.totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: data!.totalPages }, (_, i) => i + 1).map(
+                  (p) => (
+                    <Button
+                      key={p}
+                      variant={p === data!.totalPages ? "default" : "outline"}
+                      size="sm"
+                      render={<Link href={`/admin/bookings?tab=${tab}&page=${p}`} />}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
