@@ -175,9 +175,9 @@ function BookingsContent() {
                           {formatCurrency(booking.totalPrice)}
                         </td>
                         <td className="p-3 text-right">
-                          <Button variant="ghost" size="icon" render={<Link href={`/bookings/${booking.id}`} />} nativeButton={false}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                            <Button variant="ghost" size="icon" render={<Link href={`/admin/bookings/${booking.id}`} />} nativeButton={false}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
                         </td>
                       </tr>
                     ))}
