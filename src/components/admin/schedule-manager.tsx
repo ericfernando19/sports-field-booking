@@ -12,7 +12,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Calendar } from "@/components/booking/calendar";
 import { TimeSlot } from "@/components/booking/time-slots";
@@ -188,18 +187,20 @@ export function AdminScheduleManager({ fields }: AdminScheduleManagerProps) {
   const blockedCount = schedules.filter((s) => s.status === "BLOCKED").length;
   const bookedCount = schedules.filter((s) => s.status === "BOOKED").length;
 
+  const selectedFieldName = fields.find((f) => f.id === selectedField)?.name || "";
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Lapangan</Label>
           <Select value={selectedField} onValueChange={(v) => setSelectedField(v || "")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Pilih lapangan" />
+            <SelectTrigger className="w-full min-h-10">
+              {selectedFieldName || <span className="text-muted-foreground">Pilih lapangan</span>}
             </SelectTrigger>
             <SelectContent>
               {fields.map((field) => (
-                <SelectItem key={field.id} value={field.id}>
+                <SelectItem key={field.id} value={field.id} className="py-2">
                   {field.name}
                 </SelectItem>
               ))}
