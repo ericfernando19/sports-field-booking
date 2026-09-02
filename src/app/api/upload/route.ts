@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import sharp from "sharp";
 import { requireAuth } from "@/lib/permissions";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
 
-const UPLOAD_DIRS: Record<string, string> = {
-  proof: "proofs",
-  field: "fields",
+const CLOUDINARY_FOLDERS: Record<string, string> = {
+  proof: "sportbook/proofs",
+  field: "sportbook/fields",
 };
 
 const CROP_WIDTH = 1280;
@@ -85,18 +90,28 @@ export async function POST(request: NextRequest) {
 
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
     const prefix = type === "field" ? "field" : "proof";
-    const filename = `${prefix}-${uniqueSuffix}.jpg`;
+    const filename = `${prefix}-${uniqueSuffix}`;
+    const folder = CLOUDINARY_FOLDERS[type] || "sportbook/proofs";
 
-    const dirName = UPLOAD_DIRS[type] || "proofs";
-    const uploadDir = path.join(process.cwd(), "public", "uploads", dirName);
-    await mkdir(uploadDir, { recursive: true });
-
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          public_id: filename,
+          resource_type: "image",
+          format: "jpg",
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result as { secure_url: string });
+        }
+      );
+      stream.end(buffer);
+    });
 
     return NextResponse.json({
-      url: `/uploads/${dirName}/${filename}`,
-      filename,
+      url: result.secure_url,
+      filename: `${filename}.jpg`,
     });
   } catch {
     return NextResponse.json(

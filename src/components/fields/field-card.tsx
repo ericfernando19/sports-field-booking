@@ -16,12 +16,12 @@ const sportTypeLabels: Record<string, string> = {
 };
 
 const sportTypeColors: Record<string, string> = {
-  FUTSAL: "bg-green-100 text-green-800",
-  BADMINTON: "bg-blue-100 text-blue-800",
-  BASKETBALL: "bg-orange-100 text-orange-800",
-  TENNIS: "bg-yellow-100 text-yellow-800",
-  VOLLEYBALL: "bg-purple-100 text-purple-800",
-  MINI_SOCCER: "bg-red-100 text-red-800",
+  FUTSAL: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+  BADMINTON: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
+  BASKETBALL: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+  TENNIS: "bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300",
+  VOLLEYBALL: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+  MINI_SOCCER: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
 };
 
 const sportTypeImages: Record<string, string> = {
