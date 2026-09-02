@@ -73,11 +73,6 @@ function BookingsContent() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Kelola Booking</h1>
-        <p className="text-muted-foreground">Lihat dan kelola semua booking</p>
-      </div>
-
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

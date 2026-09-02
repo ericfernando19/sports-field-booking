@@ -43,13 +43,7 @@ export default async function AdminFieldsPage({ searchParams }: AdminFieldsPageP
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Kelola Lapangan</h1>
-          <p className="text-muted-foreground">
-            {result.total} lapangan terdaftar
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button render={<Link href="/admin/fields/new" />} nativeButton={false}>
           <Plus className="mr-2 h-4 w-4" />
           Tambah Lapangan

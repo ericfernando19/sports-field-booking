@@ -11,13 +11,6 @@ export default async function AdminSchedulesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Kelola Jadwal</h1>
-        <p className="text-muted-foreground">
-          Atur jadwal lapangan, blokir, atau buka slot
-        </p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

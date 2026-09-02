@@ -84,12 +84,9 @@ export default async function AdminBookingDetailPage({ params }: AdminBookingDet
         </Button>
 
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Detail Booking</h1>
-            <p className="font-mono text-muted-foreground mt-1">
-              {booking.bookingCode}
-            </p>
-          </div>
+          <p className="font-mono text-muted-foreground">
+            {booking.bookingCode}
+          </p>
           <Badge className={statusColors[booking.status]}>
             {statusLabels[booking.status]}
           </Badge>

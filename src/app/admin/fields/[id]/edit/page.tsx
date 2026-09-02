@@ -16,12 +16,6 @@ export default async function EditFieldPage({ params }: EditFieldPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Edit Lapangan</h1>
-        <p className="text-muted-foreground">
-          Perbarui informasi lapangan {field.name}
-        </p>
-      </div>
       <FieldForm field={field} />
     </div>
   );

@@ -53,6 +53,26 @@ const sidebarLinks = [
   },
 ];
 
+const pageTitle: Record<string, string> = {
+  "/admin": "Dashboard",
+  "/admin/fields": "Kelola Lapangan",
+  "/admin/schedules": "Kelola Jadwal",
+  "/admin/bookings": "Kelola Booking",
+  "/admin/payments": "Verifikasi Pembayaran",
+  "/admin/users": "Kelola Users",
+};
+
+function getPageTitle(pathname: string): string {
+  if (pageTitle[pathname]) return pageTitle[pathname];
+  if (pathname.startsWith("/admin/fields/new")) return "Tambah Lapangan Baru";
+  if (pathname.includes("/edit")) return "Edit Lapangan";
+  if (pathname.startsWith("/admin/bookings/") && pathname !== "/admin/bookings") return "Detail Booking";
+  for (const [key, value] of Object.entries(pageTitle)) {
+    if (pathname.startsWith(key)) return value;
+  }
+  return "Admin";
+}
+
 function SidebarContent({ pathname }: { pathname: string }) {
   return (
     <div className="flex flex-col h-full">
@@ -122,9 +142,9 @@ export default function AdminLayout({
     .slice(0, 2) || "A";
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 border-r bg-muted/30 flex-col">
+      <aside className="hidden lg:flex fixed top-0 left-0 bottom-0 w-64 border-r bg-muted/30 flex-col z-20">
         <SidebarContent pathname={pathname} />
       </aside>
 
@@ -148,11 +168,10 @@ export default function AdminLayout({
       </Sheet>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="lg:ml-64 min-h-screen flex flex-col">
         {/* Top Bar */}
-        <header className="h-16 border-b bg-background flex items-center justify-between px-4 lg:px-6">
-          <div className="lg:hidden" />
-          <div className="hidden lg:block" />
+        <header className="fixed top-0 right-0 left-0 lg:left-64 z-10 h-16 border-b bg-background flex items-center justify-between px-4 lg:px-6">
+          <h1 className="text-lg font-semibold">{getPageTitle(pathname)}</h1>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">
               {session?.user?.email}
@@ -164,7 +183,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 bg-muted/10">{children}</main>
+        <main className="flex-1 pt-20 px-4 pb-4 lg:px-6 lg:pb-6 bg-muted/10">{children}</main>
       </div>
     </div>
   );
