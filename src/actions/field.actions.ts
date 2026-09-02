@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/permissions";
 import { fieldSchema, type FieldInput } from "@/validations/field.schema";
@@ -188,9 +189,59 @@ export async function createField(
       data: validated.data,
     });
 
+    const defaultTimeSlots = [
+      { startTime: "07:00", endTime: "08:00" },
+      { startTime: "08:00", endTime: "09:00" },
+      { startTime: "09:00", endTime: "10:00" },
+      { startTime: "10:00", endTime: "11:00" },
+      { startTime: "13:00", endTime: "14:00" },
+      { startTime: "14:00", endTime: "15:00" },
+      { startTime: "15:00", endTime: "16:00" },
+      { startTime: "16:00", endTime: "17:00" },
+      { startTime: "17:00", endTime: "18:00" },
+      { startTime: "18:00", endTime: "19:00" },
+      { startTime: "19:00", endTime: "20:00" },
+      { startTime: "20:00", endTime: "21:00" },
+    ];
+
+    const schedulesToCreate: {
+      fieldId: string;
+      date: Date;
+      startTime: string;
+      endTime: string;
+      price: number;
+      status: string;
+    }[] = [];
+
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const date = new Date();
+      date.setDate(date.getDate() + dayOffset);
+
+      for (const slot of defaultTimeSlots) {
+        schedulesToCreate.push({
+          fieldId: field.id,
+          date,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+          price: validated.data.pricePerHour,
+          status: "AVAILABLE",
+        });
+      }
+    }
+
+    if (schedulesToCreate.length > 0) {
+      await prisma.schedule.createMany({
+        data: schedulesToCreate as any,
+        skipDuplicates: true,
+      });
+    }
+
+    revalidatePath("/fields");
+    revalidatePath("/");
+
     return {
       success: true,
-      message: "Lapangan berhasil dibuat",
+      message: "Lapangan berhasil dibuat dengan jadwal 7 hari ke depan",
       data: field,
     };
   } catch (error) {
@@ -244,6 +295,10 @@ export async function updateField(
       data: validated.data,
     });
 
+    revalidatePath("/fields");
+    revalidatePath("/");
+    revalidatePath(`/fields/${field.slug}`);
+
     return {
       success: true,
       message: "Lapangan berhasil diperbarui",
@@ -280,6 +335,9 @@ export async function deleteField(id: string): Promise<ApiResponse> {
         data: { isActive: false },
       });
 
+      revalidatePath("/fields");
+      revalidatePath("/");
+
       return {
         success: true,
         message: "Lapangan berhasil dinonaktifkan (memiliki riwayat booking)",
@@ -287,6 +345,9 @@ export async function deleteField(id: string): Promise<ApiResponse> {
     }
 
     await prisma.field.delete({ where: { id } });
+
+    revalidatePath("/fields");
+    revalidatePath("/");
 
     return {
       success: true,
@@ -317,6 +378,9 @@ export async function toggleFieldStatus(id: string): Promise<ApiResponse<FieldWi
       where: { id },
       data: { isActive: !field.isActive },
     });
+
+    revalidatePath("/fields");
+    revalidatePath("/");
 
     return {
       success: true,
