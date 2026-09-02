@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   LayoutDashboard,
-  Dumbbell,
+  LandPlot,
   Calendar,
   CalendarDays,
   Users,
@@ -29,7 +29,7 @@ const sidebarLinks = [
   {
     label: "Lapangan",
     href: "/admin/fields",
-    icon: Dumbbell,
+    icon: LandPlot,
   },
   {
     label: "Jadwal",

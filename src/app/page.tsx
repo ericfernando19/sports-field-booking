@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Search, Calendar, CreditCard, Dumbbell, Volleyball, Trophy, Timer } from "lucide-react";
+import { Search, Calendar, CreditCard, Volleyball } from "lucide-react";
+import { Icon } from "lucide-react";
+import { soccerBall, tennisBall, tennisRacket } from "@lucide/lab";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navbar } from "@/components/layout/navbar";
@@ -8,13 +10,25 @@ import { getFeaturedFields } from "@/actions/field.actions";
 
 export const dynamic = "force-dynamic";
 
+function SoccerBallIcon({ className }: { className?: string }) {
+  return <Icon iconNode={soccerBall} className={className} />;
+}
+
+function TennisRacketIcon({ className }: { className?: string }) {
+  return <Icon iconNode={tennisRacket} className={className} />;
+}
+
+function TennisBallIcon({ className }: { className?: string }) {
+  return <Icon iconNode={tennisBall} className={className} />;
+}
+
 const sportCategories = [
-  { name: "Futsal", icon: Dumbbell, href: "/fields?sportType=FUTSAL" },
-  { name: "Bulu Tangkis", icon: Trophy, href: "/fields?sportType=BADMINTON" },
+  { name: "Futsal", icon: SoccerBallIcon, href: "/fields?sportType=FUTSAL" },
+  { name: "Bulu Tangkis", icon: TennisRacketIcon, href: "/fields?sportType=BADMINTON" },
   { name: "Basket", icon: Volleyball, href: "/fields?sportType=BASKETBALL" },
-  { name: "Tenis", icon: Timer, href: "/fields?sportType=TENNIS" },
+  { name: "Tenis", icon: TennisBallIcon, href: "/fields?sportType=TENNIS" },
   { name: "Voli", icon: Volleyball, href: "/fields?sportType=VOLLEYBALL" },
-  { name: "Mini Soccer", icon: Dumbbell, href: "/fields?sportType=MINI_SOCCER" },
+  { name: "Mini Soccer", icon: SoccerBallIcon, href: "/fields?sportType=MINI_SOCCER" },
 ];
 
 const steps = [
