@@ -104,75 +104,92 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger render={<div className="md:hidden inline-flex items-center justify-center rounded-lg hover:bg-muted hover:text-foreground cursor-pointer" />} nativeButton={false} className="md:hidden">
+          <SheetTrigger render={<div className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted hover:text-foreground cursor-pointer" />} nativeButton={false}>
             <Menu className="h-5 w-5" />
           </SheetTrigger>
-          <SheetContent side="right" className="w-[300px]">
-            <div className="flex flex-col gap-4 mt-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="text-lg font-medium hover:text-primary transition-colors"
-                >
-                  {link.label}
+          <SheetContent side="right" className="w-[280px] p-0">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center gap-2 px-6 py-4 border-b">
+                <Link href="/" onClick={() => setOpen(false)} className="font-bold text-lg">
+                  <span className="text-primary">Sport</span>Book
                 </Link>
-              ))}
-              <div className="border-t pt-4 mt-4">
-                {session ? (
-                  <>
-                    <div className="flex items-center gap-3 mb-4">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>{initials}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{session.user?.name}</p>
-                        <p className="text-sm text-muted-foreground">{session.user?.email}</p>
+              </div>
+              <nav className="flex-1 px-4 py-4">
+                <div className="flex flex-col gap-1">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+                <div className="border-t mt-4 pt-4">
+                  {session ? (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="text-sm">{initials}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{session.user?.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{session.user?.email}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
                       <Link
                         href="/profile"
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-2 text-sm hover:text-primary"
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                       >
                         <User className="h-4 w-4" />
                         Profil
+                      </Link>
+                      <Link
+                        href="/bookings"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <CalendarDays className="h-4 w-4" />
+                        Booking Saya
                       </Link>
                       {session.user?.role === "ADMIN" && (
                         <Link
                           href="/admin"
                           onClick={() => setOpen(false)}
-                          className="flex items-center gap-2 text-sm hover:text-primary"
+                          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           Dashboard Admin
                         </Link>
                       )}
-                      <button
-                        onClick={() => {
-                          signOut({ callbackUrl: "/login" });
-                          setOpen(false);
-                        }}
-                        className="flex items-center gap-2 text-sm text-destructive hover:text-destructive/80 mt-4"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Logout
-                      </button>
+                      <div className="border-t mt-2 pt-2">
+                        <button
+                          onClick={() => {
+                            signOut({ callbackUrl: "/login" });
+                            setOpen(false);
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <Button render={<Link href="/login" onClick={() => setOpen(false)} />} nativeButton={false} className="w-full">
-                      Masuk
-                    </Button>
-                    <Button render={<Link href="/register" onClick={() => setOpen(false)} />} variant="outline" nativeButton={false} className="w-full">
-                      Daftar
-                    </Button>
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 px-3">
+                      <Button render={<Link href="/login" onClick={() => setOpen(false)} />} nativeButton={false} className="w-full h-9">
+                        Masuk
+                      </Button>
+                      <Button render={<Link href="/register" onClick={() => setOpen(false)} />} variant="outline" nativeButton={false} className="w-full h-9">
+                        Daftar
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </nav>
             </div>
           </SheetContent>
         </Sheet>
