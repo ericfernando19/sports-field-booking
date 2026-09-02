@@ -42,7 +42,7 @@ export function FieldCard({ field }: FieldCardProps) {
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-video bg-muted relative">
+      <div className="aspect-[4/3] bg-muted relative">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -60,18 +60,18 @@ export function FieldCard({ field }: FieldCardProps) {
           {sportTypeLabels[field.sportType] || field.sportType}
         </Badge>
       </div>
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-lg line-clamp-1">{field.name}</h3>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-          <MapPin className="h-4 w-4" />
+      <CardContent className="p-3">
+        <h3 className="font-semibold text-base line-clamp-1">{field.name}</h3>
+        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+          <MapPin className="h-3.5 w-3.5" />
           <span className="line-clamp-1">{field.location}</span>
         </div>
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-2 flex items-center justify-between">
           <div>
-            <span className="text-xl font-bold text-primary">
+            <span className="text-lg font-bold text-primary">
               {formatCurrency(field.pricePerHour)}
             </span>
-            <span className="text-sm text-muted-foreground"> / jam</span>
+            <span className="text-xs text-muted-foreground"> / jam</span>
           </div>
           <Button render={<Link href={`/fields/${field.slug}`} />} size="sm" nativeButton={false}>
             Detail
